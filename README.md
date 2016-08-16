@@ -33,7 +33,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 OR
 
-RedisQueueReader.Manager.init_parser("queue_1", [ &RedisQueueReaderParser.Parsers.response_json_to_map/1, &RedisQueueReaderParser.Parsers.convert_map_for_action_controller_loggers_table/1,  RedisQueueReaderParser.Parsers.write_to_db/1] )
+RedisQueueReader.Manager.init_parser("queue_1", [ &RedisQueueReaderParser.Parsers.response_json_to_map/1, &RedisQueueReaderParser.Parsers.convert_map_for_action_controller_loggers_table/1,  &RedisQueueReaderParser.Parsers.write_to_db/1] )
 
 
 
