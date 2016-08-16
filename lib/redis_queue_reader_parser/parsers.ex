@@ -8,8 +8,7 @@ defmodule RedisQueueReaderParser.Parsers do
   end
 
   def response_json_to_map( :undefined ) do
-  	 :timer.sleep(1000)
-     %{}
+    %{}
   end
 
   def response_json_to_map( res ) do 
@@ -17,17 +16,17 @@ defmodule RedisQueueReaderParser.Parsers do
     :jsx.decode(res, [:return_maps])
   end
 
-  defp write_to_db( name_of_table_and_list_of_params ) when name_of_table_and_list_of_params == %{} do
-   %{}
+  def write_to_db( name_of_table_and_list_of_params ) when name_of_table_and_list_of_params == [] do
+   []
   end
-  defp write_to_db(name_of_table_and_list_of_params) do
+  def write_to_db(name_of_table_and_list_of_params) do
 
     [name_of_table | list_of_params] = name_of_table_and_list_of_params
     RedisQueueReaderParser.Repo.insert_all(name_of_table, list_of_params)
   end
 
   def convert_map_for_action_controller_loggers_table(json) when json == %{} do
-   %{}
+   []
   end
 
   def convert_map_for_action_controller_loggers_table(json) do
