@@ -8,6 +8,7 @@ defmodule RedisQueueReaderParser do
 
     # Define workers and child supervisors to be supervised
     children = [
+      supervisor(RedisQueueReaderParser.Repo, [])
       # Starts a worker by calling: RedisQueueReaderParser.Worker.start_link(arg1, arg2, arg3)
       # worker(RedisQueueReaderParser.Worker, [arg1, arg2, arg3]),
     ]
