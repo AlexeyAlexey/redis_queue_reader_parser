@@ -44,3 +44,27 @@ RedisQueueReader.Manager.init_reader("queue_1", [ &RedisQueueReaderParser.Parser
 4) RedisQueueReader.Manager.destroy_all_readers_without_check_child("queue_1")
 
 5) RedisQueueReader.Manager.list_of_init_readers => ["queue_3", "queue_2", "queue_1"]
+
+
+process_action_controller: 
+  RedisQueueReader.Manager.init_reader("process_action_controller", [ &RedisQueueReaderParser.Parsers.parse_json_action_controller_loggers/1 ] )
+
+  RedisQueueReader.Manager.start_new_reader("process_action_controller")
+
+
+
+render_template_action_view: 
+  RedisQueueReader.Manager.init_reader("render_template_action_view", [ &RedisQueueReaderParser.Parsers.parse_json_render_template_action_view/1 ] )
+
+  RedisQueueReader.Manager.start_new_reader("render_template_action_view")
+
+
+render_partial_action_view: 
+  RedisQueueReader.Manager.init_reader("render_partial_action_view", [ &RedisQueueReaderParser.Parsers.parse_json_render_partial_action_view/1 ] )
+
+  RedisQueueReader.Manager.start_new_reader("render_partial_action_view")
+
+logstash
+  RedisQueueReader.Manager.init_reader("logstash", [ &RedisQueueReaderParser.Parsers.parse_json_json_logstashs/1 ] )
+
+  RedisQueueReader.Manager.start_new_reader("logstash")
