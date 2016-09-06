@@ -6,9 +6,17 @@ defmodule RedisQueueReaderParser do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    pool_options = [
+      name: {:local, :write_into_db_pool},
+      worker_module: RedisQueueReaderParser.WriteIntoDb,
+      size:          10,
+      max_overflow:  0
+    ]
+
     # Define workers and child supervisors to be supervised
     children = [
-      supervisor(RedisQueueReaderParser.Repo, [])
+      supervisor(RedisQueueReaderParser.Repo, []),
+      :poolboy.child_spec(:write_into_db_pool, pool_options, [])
       # Starts a worker by calling: RedisQueueReaderParser.Worker.start_link(arg1, arg2, arg3)
       # worker(RedisQueueReaderParser.Worker, [arg1, arg2, arg3]),
     ]

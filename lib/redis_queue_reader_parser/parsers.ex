@@ -1,9 +1,12 @@
 defmodule RedisQueueReaderParser.Parsers do
   use Timex
   
-
+  
   def res_to_map_for_render_partial_action_view( :undefined ) do
     [%{}, :undefined]
+  end
+  def res_to_map_for_render_partial_action_view( :no_connection ) do
+    [%{}, :no_connection]
   end
   def res_to_map_for_render_partial_action_view( res ) do 
     #return map
@@ -14,12 +17,18 @@ defmodule RedisQueueReaderParser.Parsers do
   ####
   #process_action_controller
   ####
+  def read_from_redis_json_action_controller_loggers?() do
+    true
+  end
   def parse_json_action_controller_loggers(res) do
     response_json_to_map(res)
     |> convert_map_for_action_controller_loggers_table
     |> write_to_db
   end
   def response_json_to_map( :undefined ) do
+    %{}
+  end
+  def response_json_to_map( :no_connection ) do
     %{}
   end
   def response_json_to_map( res ) do 
@@ -63,6 +72,9 @@ defmodule RedisQueueReaderParser.Parsers do
   ####
   #render_partial_action_view
   ####
+  def read_from_redis_json_render_partial_action_view?() do
+    true
+  end
   def parse_json_render_partial_action_view(res) do
     res_to_map_for_render_partial_action_view(res)
     |> convert_map_for_render_partial_action_view
@@ -96,6 +108,9 @@ defmodule RedisQueueReaderParser.Parsers do
   ####
   #render_template_action_view
   ####
+  def read_from_redis_json_render_template_action_view?() do
+    true
+  end
   def parse_json_render_template_action_view(res) do
     res_to_map_for_render_partial_action_view(res)
     |> convert_map_for_render_template_action_view
@@ -128,17 +143,20 @@ defmodule RedisQueueReaderParser.Parsers do
   end
 
   ####
-  #json_logstashs
+  #logstash
   ####
-  def parse_json_json_logstashs(res) do
+  def read_from_redis_json_logstash?() do
+    true
+  end
+  def parse_json_logstash(res) do
     res_to_map_for_render_partial_action_view(res)
-    |> convert_map_for_json_logstashs
+    |> convert_map_for_json_logstash
     |> write_to_db
   end
-  def convert_map_for_json_logstashs([map_json | _string_from_redis]) when map_json == %{} do
+  def convert_map_for_json_logstash([map_json | _string_from_redis]) when map_json == %{} do
     []
   end
-  def convert_map_for_json_logstashs([map_json | string_from_redis]) do
+  def convert_map_for_json_logstash([map_json | string_from_redis]) do
     #map_json_string_from_redis = [map_json, string_from_redis]
     #string_from_redis = "{\"message\":\"WatcherGroupsWatcherHelperPatch monkey-patch\",\"@timestamp\":\"2016-08-19T07:31:14.565+00:00\",\"@version\":\"1\",\"severity\":\"INFO\",\"host\":\"vagrant-ubuntu-trusty-64\",\"log_unique_id\":\"18344780f1fc1da6d3aec520aacb1471591867\",\"session_id\":\"\",\"user_id\":\"\"}\n"
     #map_json = :jsx.decode(json_str, [:return_maps])
@@ -172,7 +190,10 @@ defmodule RedisQueueReaderParser.Parsers do
   end
   def write_to_db(name_of_table_and_list_of_params) do
 
-    [name_of_table | list_of_params] = name_of_table_and_list_of_params
-    RedisQueueReaderParser.Repo.insert_all(name_of_table, list_of_params)
+    db_pid = :poolboy.checkout(:write_into_db_pool)
+    GenServer.cast(db_pid, {:write_into_db, name_of_table_and_list_of_params})
+    :poolboy.checkin(:write_into_db_pool, db_pid)
+    #[name_of_table | list_of_params] = name_of_table_and_list_of_params
+    #RedisQueueReaderParser.Repo.insert_all(name_of_table, list_of_params)
   end 
 end
