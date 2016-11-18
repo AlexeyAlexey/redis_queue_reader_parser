@@ -23,18 +23,18 @@ defmodule RedisQueueReaderParser.RailsParsers do
     #https://saratchandra.in/post/hmac_in_elixir/
     case {:ok, json["project_id"]} do
        {:ok, nil} ->
-         recognize_structure(%{}, 0)
+         recognize_structure(%{}, %{}, 0)
        {:ok, project_id} ->
-         recognize_structure(json, project_id)
+         recognize_structure(json, json, project_id)
        _ -> 
          recognize_structure(%{}, 0)
     end
   end
 
-  def recognize_structure(json, _project_id) when json == %{} do
+  def recognize_structure(%{}, json, _project_id) when json == %{} do
    []
   end
-  def recognize_structure(json, project_id) when json["name"] == "process_action.action_controller" do
+  def recognize_structure(%{"name" => name}, json, project_id) when name == "process_action.action_controller" do
   	%{"name"    => "process_action.action_controller", 
       "payload" => payload,
        "time"   => time,
@@ -46,7 +46,7 @@ defmodule RedisQueueReaderParser.RailsParsers do
        "severity"   => severity, 
        "host"       => host, 
        "request_unique_id" => request_unique_id, 
-       "project_id"        => project_id} = json
+       "project_id"        => _} = json
 
     %{"controller" => controller, 
       "action"     => action, "params" => params, 
@@ -64,18 +64,30 @@ defmodule RedisQueueReaderParser.RailsParsers do
         "HTTP_REFERER"    => http_referer} = headers
 
       get_table_name(project_id, 0)
+
+      [get_table_name(project_id, 0), [ ]]
    	
   end
-  def recognize_structure(json, project_id) when json["message"] do
-    %{"message"    => message,
+  def recognize_structure(%{"message" => message}, json, project_id) do
+    %{"message"    => _,
       "@timestamp" => timestamp, 
       "@version"   => version,
       "severity"   => severity,
       "host"       => severity,
       "request_unique_id" => request_unique_id,
-      "project_id"        => project_id} = json
+      "project_id"        => _} = json
 
     get_table_name(project_id, 1)
+
+    [get_table_name(project_id, 1), [ message:   message,
+                                      timestamp: timestamp,
+                                      version:   version,
+                                      severity:  severity,
+                                      host:      severity,
+                                      request_unique_id: request_unique_id,
+                                      project_id: project_id
+                                    ]
+    ]
   end
   def recognize_structure(_json, _project_id) do
     []
